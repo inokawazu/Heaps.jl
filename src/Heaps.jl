@@ -30,30 +30,32 @@ function heapify(v, by = <)
 end
 
 firstindex(_::Heap) = 1
-lastindex(mh::Heap) = length(mh.elements)
+lastindex(h::Heap) = length(h.elements)
 
-function Base.push!(mh::Heap, elem)
-    push!(mh.elements, elem)
-    ind = lastindex(mh)
-    lt = mh.lt
+Base.getindex(h::Heap, i) = h.elements[i]
+Base.setindex!(h::Heap, X, i) = h.elements[i] = X
 
-    while ind != firstindex(mh)
+function Base.push!(h::Heap, elem)
+    push!(h.elements, elem)
+    ind = lastindex(h)
+    lt = h.lt
+
+    while ind != firstindex(h)
         pind = parentindex(ind)
 
-        # @info "Comparing $( mh.elements[pind] ) > $( mh.elements[ind] )"
-        if lt(mh.elements[ind], mh.elements[pind])
-            mh.elements[pind], mh.elements[ind] = mh.elements[ind], mh.elements[pind]
+        if lt(h[ind], h[pind])
+            h[pind], h[ind] = h[ind], h[pind]
             ind = pind
         else
             break
         end
     end
 
-    return mh
+    return h
 end
 
-function Base.push!(mh::Heap, elem, rest...)
-    push!(push!(mh, elem), rest...)
+function Base.push!(h::Heap, elem, rest...)
+    push!(push!(h, elem), rest...)
 end
 
 # 1
@@ -80,45 +82,45 @@ end
 # 3 2
 # 4
 
-Base.isempty(mh::Heap) = isempty(mh.elements)
+Base.isempty(h::Heap) = isempty(h.elements)
 
 function swap!(h::Heap, ind1, ind2)
-    h.elements[ind1], h.elements[ind2] = h.elements[ind2], h.elements[ind1]
+    h[ind1], h[ind2] = h[ind2], h[ind1]
     return h
 end
 
-function Base.pop!(mh::Heap)
-    if length(mh.elements) == 1
-        return pop!(mh.elements)
+function Base.pop!(h::Heap)
+    if length(h.elements) == 1
+        return pop!(h.elements)
     end
 
-    popped = mh.elements[firstindex(mh)]
-    mh.elements[firstindex(mh)] = pop!(mh.elements)
-    lt = mh.lt
+    popped = h.elements[firstindex(h)]
+    h.elements[firstindex(h)] = pop!(h.elements)
+    lt = h.lt
 
-    ind = firstindex(mh)
-    while !isempty(mh) && ind <= lastindex(mh)
+    ind = firstindex(h)
+    while !isempty(h) && ind <= lastindex(h)
         lcind = leftchildindex(ind)
         rcind = rightchildindex(ind)
 
-        haslc = lcind <= lastindex(mh)
-        hasrc = rcind <= lastindex(mh)
+        haslc = lcind <= lastindex(h)
+        hasrc = rcind <= lastindex(h)
 
         if haslc && hasrc
-            if !lt(mh.elements[rcind], mh.elements[lcind]) && lt(mh.elements[lcind], mh.elements[ind])
-                swap!(mh, ind, lcind)
+            if !lt(h[rcind], h[lcind]) && lt(h[lcind], h[ind])
+                swap!(h, ind, lcind)
                 ind = lcind
-            elseif lt(mh.elements[rcind], mh.elements[ind])
-                swap!(mh, ind, rcind)
+            elseif lt(h[rcind], h[ind])
+                swap!(h, ind, rcind)
                 ind = rcind
             else 
                 break
             end
-        elseif haslc && lt(mh.elements[lcind], mh.elements[ind])
-            swap!(mh, ind, lcind)
+        elseif haslc && lt(h[lcind], h[ind])
+            swap!(h, ind, lcind)
             ind = lcind
-        elseif hasrc && lt(mh.elements[rcind], mh.elements[ind])
-            swap!(mh, ind, rcind)
+        elseif hasrc && lt(h[rcind], h[ind])
+            swap!(h, ind, rcind)
             ind = rcind
         else
             break
