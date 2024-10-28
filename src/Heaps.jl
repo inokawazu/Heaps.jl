@@ -60,6 +60,8 @@ function swap!(h::Heap, ind1, ind2)
     return h
 end
 
+Base.copy(h::Heap) = Heap(copy(h.elements), h.lt)
+
 function Base.pop!(h::Heap)
     if length(h.elements) == 1
         return pop!(h.elements)
