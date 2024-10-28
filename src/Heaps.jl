@@ -1,32 +1,43 @@
 module Heaps
 
-export MinHeap
+export heapify, minheap, Heap
 
 # 0
 # 1 2
 # 3 4 5 6
 # 7 8 9 10 11 12 13 14
 
-struct MinHeap{T}
-    elements::Vector{T}
+struct Heap{T}
+    elements::Vector
+    lt::Function
 end
 
-function MinHeap{T}() where T
-    return MinHeap{T}(T[])
+function minheap(T::Type)
+    return Heap{T}(T[], <)
 end
 
-firstindex(_::MinHeap) = 1
-lastindex(mh::MinHeap) = length(mh.elements)
+function heapify(v, by = <)
+    T = eltype(v)
+    heap = Heap{T}(T[], by)
+    for elem in v
+        push!(heap, elem)
+    end
+    return heap
+end
 
-function Base.push!(mh::MinHeap, elem)
+firstindex(_::Heap) = 1
+lastindex(mh::Heap) = length(mh.elements)
+
+function Base.push!(mh::Heap, elem)
     push!(mh.elements, elem)
     ind = lastindex(mh)
+    lt = mh.lt
 
     while ind != firstindex(mh)
         pind = parentindex(ind)
 
         # @info "Comparing $( mh.elements[pind] ) > $( mh.elements[ind] )"
-        if mh.elements[ind] < mh.elements[pind]
+        if lt(mh.elements[ind], mh.elements[pind])
             mh.elements[pind], mh.elements[ind] = mh.elements[ind], mh.elements[pind]
             ind = pind
         else
@@ -62,15 +73,16 @@ end
 # 4
 
 
-Base.isempty(mh::MinHeap) = isempty(mh.elements)
+Base.isempty(mh::Heap) = isempty(mh.elements)
 
-function Base.pop!(mh::MinHeap)
+function Base.pop!(mh::Heap)
     if length(mh.elements) == 1
         return pop!(mh.elements)
     end
 
     popped = mh.elements[firstindex(mh)]
     mh.elements[firstindex(mh)] = pop!(mh.elements)
+    lt = mh.lt
 
     ind = firstindex(mh)
     while !isempty(mh) && ind <= lastindex(mh)
@@ -81,19 +93,19 @@ function Base.pop!(mh::MinHeap)
         hasrc = rcind <= lastindex(mh)
 
         if haslc && hasrc
-            if !(mh.elements[rcind] < mh.elements[lcind]) && mh.elements[lcind] < mh.elements[ind]
+            if !lt(mh.elements[rcind], mh.elements[lcind]) && lt(mh.elements[lcind], mh.elements[ind])
                 mh.elements[lcind], mh.elements[ind] = mh.elements[ind], mh.elements[lcind]
                 ind = lcind
-            elseif mh.elements[rcind] < mh.elements[ind]
+            elseif lt(mh.elements[rcind], mh.elements[ind])
                 mh.elements[rcind], mh.elements[ind] = mh.elements[ind], mh.elements[rcind]
                 ind = rcind
             else 
                 break
             end
-        elseif haslc && mh.elements[lcind] < mh.elements[ind]
+        elseif haslc && lt(mh.elements[lcind], mh.elements[ind])
             mh.elements[lcind], mh.elements[ind] = mh.elements[ind], mh.elements[lcind]
             ind = lcind
-        elseif hasrc && mh.elements[rcind] < mh.elements[ind]
+        elseif hasrc && lt(mh.elements[rcind], mh.elements[ind])
             mh.elements[rcind], mh.elements[ind] = mh.elements[ind], mh.elements[rcind]
             ind = rcind
         else

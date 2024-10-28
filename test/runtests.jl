@@ -29,18 +29,27 @@ end
     @test Heaps.rightchildindex(5) == 11
 end
 
-function push_pop_test(elems)
-    heap = MinHeap{eltype(elems)}()
-    for elem in elems
+function minheap_push_pop_test(elems)
+    heap = minheap(eltype(elems))
+
+    @time for elem in elems
         push!(heap, elem)
     end
 
-    for i in sort(elems)
+    @time for i in sort(elems)
         @test pop!(heap) == i
     end
 end
 
 @testset "Push Pop Tests Minheap" begin
-    push_pop_test([10, 1, 3, 9, 2, 8, 6, 4, 7, 5])
-    push_pop_test([65, 84, 23, 69, 34, 17, 30, 76, 11, 89, 42, 47, 50, 16, 6, 99, 13, 19, 91, 3, 18, 71, 93, 77, 90, 15, 25, 60, 61, 10, 70, 38, 31, 4, 94, 22, 92, 28, 45, 95, 40, 96, 35, 58, 5, 62, 21, 68, 32, 27, 98, 67, 81, 80, 73, 51, 9, 78, 39, 46, 2, 1, 43, 54, 52, 72, 97, 83, 44, 29, 41, 75, 74, 14, 88, 87, 37, 86, 48, 79, 24, 49, 59, 85, 57, 66, 7, 64, 63, 56, 100, 82, 8, 20, 33, 36, 53, 26, 12, 55])
+    minheap_push_pop_test([10, 1, 3, 9, 2, 8, 6, 4, 7, 5])
+    minheap_push_pop_test([65, 84, 23, 69, 34, 17, 30, 76, 11, 89, 42, 47, 50, 16, 6, 99, 13, 19, 91, 3, 18, 71, 93, 77, 90, 15, 25, 60, 61, 10, 70, 38, 31, 4, 94, 22, 92, 28, 45, 95, 40, 96, 35, 58, 5, 62, 21, 68, 32, 27, 98, 67, 81, 80, 73, 51, 9, 78, 39, 46, 2, 1, 43, 54, 52, 72, 97, 83, 44, 29, 41, 75, 74, 14, 88, 87, 37, 86, 48, 79, 24, 49, 59, 85, 57, 66, 7, 64, 63, 56, 100, 82, 8, 20, 33, 36, 53, 26, 12, 55])
+    minheap_push_pop_test(['o', 'g', 'k', 's', 'p', 'z', 'i', 'q', 'x', 'r', 'd', 'b', 'a', 'l', 'f', 'j', 'm', 'u', 'c', 'h', 'n', 'v', 'y', 'w', 'e', 't'])
+end
+
+@testset "Minheap Empty" begin
+    heap = minheap(Int64)
+    @test isempty(heap)
+    push!(heap, 1)
+    @test !isempty(heap)
 end
