@@ -96,7 +96,7 @@ function swap!(h::Heap, ind1, ind2)
     return h
 end
 
-Base.copy(h::Heap{T}) where T = Heap{T}(copy(h.elements), h.lt)
+Base.copy(h::Heap{T}) where T = Heap{T}(copy(h.elements), h.lt, h.by)
 
 function Base.pop!(h::Heap)
     if length(h.elements) == 1
