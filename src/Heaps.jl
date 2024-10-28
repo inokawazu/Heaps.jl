@@ -1,6 +1,6 @@
 module Heaps
 
-export heapify, minheap, Heap
+export heapify, minheap, maxheap, Heap
 
 # 0
 # 1 2
@@ -14,6 +14,10 @@ end
 
 function minheap(T::Type)
     return Heap{T}(T[], <)
+end
+
+function maxheap(T::Type)
+    return Heap{T}(T[], >)
 end
 
 function heapify(v, by = <)
@@ -48,6 +52,10 @@ function Base.push!(mh::Heap, elem)
     return mh
 end
 
+function Base.push!(mh::Heap, elem, rest...)
+    push!(push!(mh, elem), rest...)
+end
+
 # 1
 # 2 3
 # 4 5
@@ -72,8 +80,12 @@ end
 # 3 2
 # 4
 
-
 Base.isempty(mh::Heap) = isempty(mh.elements)
+
+function swap!(h::Heap, ind1, ind2)
+    h.elements[ind1], h.elements[ind2] = h.elements[ind2], h.elements[ind1]
+    return h
+end
 
 function Base.pop!(mh::Heap)
     if length(mh.elements) == 1
@@ -94,19 +106,19 @@ function Base.pop!(mh::Heap)
 
         if haslc && hasrc
             if !lt(mh.elements[rcind], mh.elements[lcind]) && lt(mh.elements[lcind], mh.elements[ind])
-                mh.elements[lcind], mh.elements[ind] = mh.elements[ind], mh.elements[lcind]
+                swap!(mh, ind, lcind)
                 ind = lcind
             elseif lt(mh.elements[rcind], mh.elements[ind])
-                mh.elements[rcind], mh.elements[ind] = mh.elements[ind], mh.elements[rcind]
+                swap!(mh, ind, rcind)
                 ind = rcind
             else 
                 break
             end
         elseif haslc && lt(mh.elements[lcind], mh.elements[ind])
-            mh.elements[lcind], mh.elements[ind] = mh.elements[ind], mh.elements[lcind]
+            swap!(mh, ind, lcind)
             ind = lcind
         elseif hasrc && lt(mh.elements[rcind], mh.elements[ind])
-            mh.elements[rcind], mh.elements[ind] = mh.elements[ind], mh.elements[rcind]
+            swap!(mh, ind, rcind)
             ind = rcind
         else
             break
