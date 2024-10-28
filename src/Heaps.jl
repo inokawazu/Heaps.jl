@@ -15,7 +15,7 @@ function maxheap(T::Type)
     return Heap{T}(T[], >)
 end
 
-function heapify(v, by = <)
+function heapify(v, by)
     T = eltype(v)
     heap = Heap{T}(T[], by)
     for elem in v
@@ -24,8 +24,33 @@ function heapify(v, by = <)
     return heap
 end
 
-firstindex(_::Heap) = 1
-lastindex(h::Heap) = length(h.elements)
+ismaxheap(h::Heap) = h.lt == >
+isminheap(h::Heap) = h.lt == <
+
+function Base.minimum(h::Heap)
+    if isminheap(h)
+        ArgumentError("minimum is defined for min heaps only.")
+    elseif isempty(h)
+        ArgumentError("minimum is defined for non-empty sets only.")
+    end
+
+    return h[begin]
+end
+
+function Base.maximum(h::Heap)
+    if ismaxheap(h)
+        ArgumentError("maximum is defined for max heaps only.")
+    elseif isempty(h)
+        ArgumentError("maximum is defined for non-empty sets only.")
+    end
+
+    return h[begin]
+end
+
+Base.firstindex(h::Heap) = firstindex(h.elements)
+Base.lastindex(h::Heap) = lastindex(h.elements)
+Base.eachindex(h::Heap) = eachindex(h.elements)
+Base.length(h::Heap) = length(h.elements)
 
 Base.getindex(h::Heap, i) = h.elements[i]
 Base.setindex!(h::Heap, X, i) = h.elements[i] = X
@@ -60,7 +85,7 @@ function swap!(h::Heap, ind1, ind2)
     return h
 end
 
-Base.copy(h::Heap) = Heap(copy(h.elements), h.lt)
+Base.copy(h::Heap{T}) where T = Heap{T}(copy(h.elements), h.lt)
 
 function Base.pop!(h::Heap)
     if length(h.elements) == 1
@@ -107,5 +132,66 @@ end
 parentindex(ind) = ( ind - 2 ) ÷ 2 + 1
 leftchildindex(ind) = ( ind - 1  ) * 2 + 2
 rightchildindex(ind) = ( ind - 1  ) * 2 + 3
+
+function Base.collect(h::Heap{T}) where T
+    h = copy(h)
+    map(eachindex(h)) do _
+        pop!(h)
+    end
+end
+
+const MAX_HEAP_LEVEL_SHOW = 3
+
+function Base.show(io::IO, h::Heap{T}) where T
+    if isminheap(h)
+        println(io, "$(length(h)) MinHeap{$T}:")
+    elseif ismaxheap(h)
+        println(io, "$(length(h)) MaxHeap{$T}:")
+    else
+        println(io, "$(length(h)) Heap{$T} with $(h.lt):")
+    end
+
+    level = 0
+    queue = [(1, level)]
+    elem_width = maximum(Iterators.take(eachindex(h), 2^MAX_HEAP_LEVEL_SHOW), init = 0) do ind
+        textwidth(string(h[ind]))
+    end
+
+    elem_width = min(elem_width, displaysize(io)[2] ÷ 2^( MAX_HEAP_LEVEL_SHOW))
+
+    while !isempty(queue) 
+        ind, clevel = popfirst!(queue)
+        
+
+        if clevel > level
+            level = clevel
+            println(io)
+            if level > MAX_HEAP_LEVEL_SHOW
+                println("...")
+                break
+            end
+        end
+        if ind > lastindex(h)
+            break
+        end
+
+        selem = rpad(h[ind], elem_width-1)
+        if length(selem) + 1 > elem_width
+            selem = chop(selem, tail = length(selem) + 1 - elem_width)
+            selem = chop(selem, tail = 2)
+            selem *= ".."
+        end
+        print(io, "$selem ")
+
+        lcind = leftchildindex(ind)
+        rcind = rightchildindex(ind)
+        if lcind <= length(h.elements) && lcind < 2^(MAX_HEAP_LEVEL_SHOW+1) + 1
+            push!(queue, (lcind, clevel + 1))
+            if rcind <= length(h.elements) && rcind < 2^(MAX_HEAP_LEVEL_SHOW+1) + 1 1
+                push!(queue, (rcind, clevel + 1))
+            end
+        end
+    end
+end
 
 end # module Heap
